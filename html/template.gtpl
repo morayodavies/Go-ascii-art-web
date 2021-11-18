@@ -12,7 +12,8 @@
             <label for="banner2">Standard</label><br>  
             <input type="radio" id="banner3" name="banner" value="thinkertoy.txt">
             <label for="banner3">Thinkertoy</label><br><br>
-            Enter word:<br><br><input type="text" name="word"><br><br>
+            Enter word:<br><br>
+            <textarea  id="word" name="word"></textarea><br><br>
             <input type="submit" value="Submit">
         </form>
     </body>

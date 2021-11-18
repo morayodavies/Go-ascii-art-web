@@ -30,24 +30,34 @@ func asciiArt(w http.ResponseWriter, r *http.Request) {
 
 	if len(r.Form["banner"]) == 0 {
 		t, _ := template.ParseFiles("html/banner-error.gtpl")
+		w.WriteHeader(http.StatusNotFound)
 		t.Execute(w, nil)
 		return
 	}
 
-	letters := []rune(r.Form["word"][0])
+	words := strings.Split(strings.ReplaceAll(r.Form["word"][0], "\r\n", "\n"), "\n")
+
+	for _, word := range words {
+		PrintWord(w, word, r.Form["banner"][0])
+	}
+}
+
+func PrintWord(w http.ResponseWriter, word string, banner string) {
+	letters := []rune(word)
 
 	//Validate input
 	for _, letter := range letters {
 		if letter < 32 || letter > 127 {
 			t, _ := template.ParseFiles("html/msg-error.gtpl")
+			w.WriteHeader(http.StatusBadRequest)
 			t.Execute(w, nil)
 			return
 		}
-
 	}
 
-	art := read_file("banners/" + r.Form["banner"][0])
+	art := read_file("banners/" + banner)
 	printLetters(w, letters, art)
+
 }
 
 func read_file(s string) []string {
