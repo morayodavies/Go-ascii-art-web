@@ -5,8 +5,8 @@
     <body>
     <h1>Ascii-Art Web</h1>
 
-    <h3>Error</h3>
-    Please enter only printable ascii character
+    <h3>404 Error</h3>
+    Please select a banner
 
     <br><br><a href="/">Back</a>
      

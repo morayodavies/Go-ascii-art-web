@@ -12,6 +12,7 @@ import (
 func main() {
 	http.HandleFunc("/", parseHtml) // setting router rule
 	http.HandleFunc("/ascii-art", asciiArt)
+
 	err := http.ListenAndServe(":9090", nil) // setting listening port
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
@@ -19,8 +20,17 @@ func main() {
 }
 
 func parseHtml(w http.ResponseWriter, r *http.Request) {
+
+	if r.URL.Path != "/" {
+		handle404(w)
+		return
+	}
 	fmt.Println("method:", r.Method) //get request method
-	t, _ := template.ParseFiles("html/template.gtpl")
+	t, err := template.ParseFiles("html/template.gtpl")
+	if err != nil {
+		handleRequest(w)
+		return
+	}
 	t.Execute(w, nil)
 }
 
@@ -29,7 +39,11 @@ func asciiArt(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	if len(r.Form["banner"]) == 0 {
-		t, _ := template.ParseFiles("html/banner-error.gtpl")
+		t, err := template.ParseFiles("html/404-banner-error.gtpl")
+		if err != nil {
+			handleRequest(w)
+			return
+		}
 		w.WriteHeader(http.StatusNotFound)
 		t.Execute(w, nil)
 		return
@@ -39,6 +53,7 @@ func asciiArt(w http.ResponseWriter, r *http.Request) {
 
 	for _, word := range words {
 		PrintWord(w, word, r.Form["banner"][0])
+
 	}
 }
 
@@ -48,7 +63,11 @@ func PrintWord(w http.ResponseWriter, word string, banner string) {
 	//Validate input
 	for _, letter := range letters {
 		if letter < 32 || letter > 127 {
-			t, _ := template.ParseFiles("html/msg-error.gtpl")
+			t, err := template.ParseFiles("html/400-msg-error.gtpl")
+			if err != nil {
+				handleRequest(w)
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			t.Execute(w, nil)
 			return
@@ -81,4 +100,24 @@ func printLetters(w http.ResponseWriter, letters []rune, art []string) {
 			}
 		}
 	}
+}
+
+func handleRequest(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+	t, err := template.ParseFiles("html/500-error.gtpl")
+	if err != nil {
+		log.Fatalf("Error happened in parsing file. Err: %s", err)
+		return
+	}
+	t.Execute(w, nil)
+}
+
+func handle404(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNotFound)
+	t, err := template.ParseFiles("html/404-error.gtpl")
+	if err != nil {
+		log.Fatalf("Error happened in parsing file. Err: %s", err)
+		return
+	}
+	t.Execute(w, nil)
 }
